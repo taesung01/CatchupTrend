@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CatchupTrend 대시보드</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f9f9f9; color: #333; }
+        h1 { color: #2E86C1; text-align: center; margin-bottom: 30px; }
+        .report-container { display: flex; flex-wrap: wrap; gap: 20px; }
+        .report { background-color: #fff; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); flex: 1; min-width: 400px; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; color: #1F618D; font-size: 1.2em; }
+        h3 { margin-top: 15px; margin-bottom: 5px; color: #555; font-size: 1em; }
+        p { line-height: 1.6; margin: 5px 0; }
+        ul { list-style-type: disc; padding-left: 20px; }
+        li { margin-bottom: 5px; }
+        strong { color: #E67E22; }
+        pre { background-color: #eee; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; font-size: 0.9em; max-height: 300px; overflow-y: auto; border: 1px solid #ccc; }
+        .filename { font-size: 0.8em; color: #777; margin-bottom: 15px; }
+        .error { color: #c00; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>CatchupTrend 대시보드</h1>
+
+    <div class="report-container">
+        <div class="report">
+            <h2>최신 뉴스 리포트</h2>
+            <p class="filename">파일: {{ news_filename }}</p>
+            {% if news_data %}
+                <p><strong>보고서 날짜:</strong> {{ news_data.get('reportDate', 'N/A') }}</p>
+                <h3>국내 뉴스 ({{ news_data.get('koreanArticles', []) | length }}개)</h3>
+                <ul>
+                    {% for article in news_data.get('koreanArticles', [])[:5] %} {# 처음 5개만 표시 #}
+                        <li><a href="{{ article.link }}" target="_blank">{{ article.title }}</a> ({{ article.source }})</li>
+                    {% endfor %}
+                    {% if news_data.get('koreanArticles', []) | length > 5 %}
+                        <li>... 외 {{ news_data.get('koreanArticles', []) | length - 5 }}개</li>
+                    {% endif %}
+                </ul>
+                 <h3>글로벌 뉴스 ({{ news_data.get('globalArticles', []) | length }}개)</h3>
+                 <ul>
+                    {% for article in news_data.get('globalArticles', [])[:5] %} {# 처음 5개만 표시 #}
+                        <li><a href="{{ article.link }}" target="_blank">{{ article.title }}</a> ({{ article.source }})</li>
+                    {% endfor %}
+                    {% if news_data.get('globalArticles', []) | length > 5 %}
+                        <li>... 외 {{ news_data.get('globalArticles', []) | length - 5 }}개</li>
+                    {% endif %}
+                 </ul>
+                <h3>Raw Data (미리보기):</h3>
+                <pre>{{ news_data | tojson(indent=2) }}</pre> {# JSON 전체를 보기 좋게 표시 #}
+            {% else %}
+                <p class="error">최신 뉴스 리포트 데이터를 불러올 수 없습니다.</p>
+            {% endif %}
+        </div>
+
+        <div class="report">
+            <h2>최신 SNS 리포트</h2>
+             <p class="filename">파일: {{ sns_filename }}</p>
+            {% if sns_data %}
+                 <p><strong>보고서 주차:</strong> {{ sns_data.get('reportWeek', 'N/A') }}</p>
+                 <h3>주간 인사이트 요약:</h3>
+                 <p>{{ sns_data.insights.weeklySummary[:200] if sns_data.insights and sns_data.insights.weeklySummary else 'N/A' }}...</p> {# 처음 200자만 표시 #}
+                 <h3>댓글 분석 키워드 (상위):</h3>
+                 <ul>
+                    {% for kw in sns_data.commentAnalysis.keywords[:5] %} {# 처음 5개만 표시 #}
+                        <li>{{ kw.keyword }} ({{ kw.count }}회)</li>
+                    {% endfor %}
+                 </ul>
+                 <h3>Raw Data (미리보기):</h3>
+                 <pre>{{ sns_data | tojson(indent=2) }}</pre> {# JSON 전체를 보기 좋게 표시 #}
+            {% else %}
+                 <p class="error">최신 SNS 리포트 데이터를 불러올 수 없습니다.</p>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>
